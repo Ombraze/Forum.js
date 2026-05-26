@@ -10,7 +10,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed shema.sql
 var schemaSQL string
 
 const DefaultPath = "data/forum.db"
