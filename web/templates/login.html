@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Forum.js</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card card card--accent">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg class="icon icon--logo" aria-hidden="true"><use href="../static/icons.svg#icon-forum"></use></svg>
+                </div>
+            </div>
+            <h1>Forum.js</h1>
+            <p class="subtitle">Connectez-vous pour rejoindre la discussion</p>
+
+            <form action="/signin" method="post">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" placeholder="votre_pseudo" autocomplete="username" required>
+
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+
+                <button type="submit">Se connecter</button>
+            </form>
+
+            <p class="auth-footer">
+                Pas encore de compte ? <a href="register.html">Créer un compte</a>
+            </p>
+            <p class="auth-footer">
+                <a href="index.html">← Retour à l'accueil</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

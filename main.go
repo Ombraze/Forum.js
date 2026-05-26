@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/Ombraze/Forum.js/src/db"
-	"github.com/Ombraze/Forum.js/src"
+	"github.com/Ombraze/Forum.js/src/server"
 )
 
 func main() {

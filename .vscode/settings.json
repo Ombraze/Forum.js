@@ -1,0 +1,4 @@
+{
+  "livePreview.serverRoot": "./web",
+  "livePreview.portNumber": 3001
+}
