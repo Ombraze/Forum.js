@@ -1,5 +1,3 @@
-PRAGMA foreign_keys = ON;
-
 -- Comptes utilisateurs
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
