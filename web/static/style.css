@@ -91,7 +91,6 @@ body::after {
 .page-header {
   text-align: center;
   margin-bottom: 3rem;
-  animation: fade-up 0.6s ease both;
 }
 
 .page-header h1 {
@@ -130,22 +129,11 @@ body::after {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
-  box-shadow: var(--shadow-md);
-  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-  animation: fade-up 0.5s ease both;
+  box-shadow: var(--shadow-sm);
 }
 
-.card:nth-child(1) { animation-delay: 0.05s; }
-.card:nth-child(2) { animation-delay: 0.1s; }
-.card:nth-child(3) { animation-delay: 0.15s; }
-.card:nth-child(4) { animation-delay: 0.2s; }
-.card:nth-child(5) { animation-delay: 0.25s; }
-.card:nth-child(6) { animation-delay: 0.3s; }
-
 .card:hover {
-  border-color: rgba(255, 107, 74, 0.2);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .card--accent {
@@ -244,26 +232,18 @@ button,
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition), color var(--transition);
+  transition: background var(--transition), color var(--transition);
 }
 
 button[type="submit"],
 .btn--primary {
   color: #fff;
-  background: linear-gradient(135deg, var(--accent), #e85a3a);
-  box-shadow: 0 4px 16px var(--accent-glow);
+  background: var(--accent);
 }
 
 button[type="submit"]:hover,
 .btn--primary:hover {
-  background: linear-gradient(135deg, var(--accent-hover), var(--accent));
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px var(--accent-glow);
-}
-
-button[type="submit"]:active,
-.btn--primary:active {
-  transform: translateY(0);
+  background: var(--accent-hover);
 }
 
 .btn--ghost {
@@ -280,13 +260,11 @@ button[type="submit"]:active,
 
 .btn--danger {
   color: #fff;
-  background: linear-gradient(135deg, var(--danger), #d94458);
-  box-shadow: 0 4px 16px rgba(242, 92, 110, 0.3);
+  background: var(--danger);
 }
 
 .btn--danger:hover {
   filter: brightness(1.08);
-  transform: translateY(-1px);
 }
 
 /* ── Auth layout (page connexion) ────────────────────────── */
@@ -300,7 +278,6 @@ button[type="submit"]:active,
 
 .auth-card {
   width: min(420px, 100%);
-  animation: fade-up 0.6s ease both;
 }
 
 .auth-card .logo {
@@ -315,12 +292,11 @@ button[type="submit"]:active,
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #e85a3a);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: var(--shadow-glow);
 }
 
 .auth-card h1 {
@@ -371,6 +347,159 @@ button[type="submit"]:active,
 
 .auth-footer a:hover {
   color: var(--accent-hover);
+}
+
+.auth-message {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.auth-message--error {
+  color: var(--danger);
+  background: rgba(242, 92, 110, 0.1);
+  border: 1px solid rgba(242, 92, 110, 0.25);
+}
+
+.auth-message--success {
+  color: var(--success);
+  background: rgba(61, 214, 140, 0.1);
+  border: 1px solid rgba(61, 214, 140, 0.25);
+}
+
+/* ── Forum (app) ─────────────────────────────────────────── */
+.forum-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.forum-page > h1 {
+  margin-bottom: 1.5rem;
+}
+
+.forum-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.forum-filter {
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.forum-filter--active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.forum-create {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+}
+
+.forum-create h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.forum-categories-field {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.forum-categories-field legend {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.forum-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+}
+
+.forum-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.forum-posts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.forum-post {
+  padding: 1.25rem;
+}
+
+.forum-post h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.forum-post h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.forum-post__meta {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.forum-post__excerpt {
+  color: var(--text-secondary);
+}
+
+.forum-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.forum-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+}
+
+.forum-user {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.text-muted {
+  color: var(--text-muted);
 }
 
 /* ── Posts (futur) ───────────────────────────────────────── */
@@ -437,7 +566,6 @@ body.home main {
   backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  animation: fade-up 0.5s ease both;
 }
 
 .navbar__brand {
@@ -500,7 +628,6 @@ a.btn {
   gap: 2.5rem;
   align-items: center;
   padding: 3rem 0 3.5rem;
-  animation: fade-up 0.6s ease 0.1s both;
 }
 
 .hero__badge {
@@ -577,7 +704,6 @@ a.btn {
 /* Sections */
 .section {
   margin-bottom: 3rem;
-  animation: fade-up 0.6s ease 0.2s both;
 }
 
 .section__head {
@@ -625,12 +751,11 @@ a.btn {
   background: var(--bg-glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition), transform var(--transition);
+  transition: border-color var(--transition);
 }
 
 .topic:hover {
-  border-color: rgba(255, 107, 74, 0.2);
-  transform: translateX(4px);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .topic__icon {
@@ -673,7 +798,6 @@ a.btn {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  animation: fade-up 0.6s ease 0.3s both;
 }
 
 .feature {
@@ -754,18 +878,6 @@ a.btn {
 
 .site-footer__links a:hover {
   color: var(--accent);
-}
-
-/* ── Animations ──────────────────────────────────────────── */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* ── Responsive ──────────────────────────────────────────── */

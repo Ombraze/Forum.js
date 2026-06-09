@@ -1,0 +1,41 @@
+import 'dotenv/config';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { initDb } from './src/db/database.js';
+import authRouter from './src/routes/api/auth.js';
+import categoriesRouter from './src/routes/api/categories.js';
+import postsRouter from './src/routes/api/posts.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 8080;
+const templatesDir = path.join(__dirname, 'web', 'templates');
+const staticDir = path.join(__dirname, 'web', 'static');
+
+initDb();
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/static', express.static(staticDir));
+
+function servePage(name) {
+  return (_req, res) => res.sendFile(path.join(templatesDir, name));
+}
+
+app.get('/', servePage('index.html'));
+app.get('/index.html', servePage('index.html'));
+app.get('/login', servePage('login.html'));
+app.get('/login.html', servePage('login.html'));
+app.get('/register', servePage('register.html'));
+app.get('/register.html', servePage('register.html'));
+app.get('/app', servePage('app.html'));
+
+app.use('/api/auth', authRouter);
+app.use('/api/categories', categoriesRouter);
+app.use('/api/posts', postsRouter);
+
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+  console.log(`Fichiers statiques : ${staticDir}`);
+});

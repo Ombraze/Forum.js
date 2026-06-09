@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription — Forum.js</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="auth-page">
         <div class="auth-card card card--accent">
             <div class="logo">
                 <div class="logo-icon">
-                    <svg class="icon icon--logo" aria-hidden="true"><use href="../static/icons.svg#icon-forum"></use></svg>
+                    <svg class="icon icon--logo" aria-hidden="true"><use href="/static/icons.svg#icon-forum"></use></svg>
                 </div>
             </div>
             <h1>Créer un compte</h1>
-            <p class="subtitle">Rejoignez la communauté Forum Project </p>
+            <p class="subtitle">Rejoignez la communauté Forum Project</p>
 
-            <form action="/register" method="post">
+            <form id="register-form">
                 <label for="username">Nom d'utilisateur</label>
                 <input type="text" id="username" name="username" placeholder="votre_pseudo" autocomplete="username" required>
 
@@ -34,12 +34,13 @@
             </form>
 
             <p class="auth-footer">
-                Déjà un compte ? <a href="login.html">Se connecter</a>
+                Déjà un compte ? <a href="/login">Se connecter</a>
             </p>
             <p class="auth-footer">
-                <a href="index.html">← Retour à l'accueil</a>
+                <a href="/">← Retour à l'accueil</a>
             </p>
         </div>
     </div>
+    <script type="module" src="/static/js/register.js"></script>
 </body>
 </html>

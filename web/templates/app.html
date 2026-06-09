@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum — Forum.js</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="/" class="navbar__brand">
+            <span class="navbar__logo">
+                <svg class="icon icon--logo" aria-hidden="true"><use href="/static/icons.svg#icon-forum"></use></svg>
+            </span>
+            Forum Project
+        </a>
+        <div class="navbar__actions" id="navbar-actions">
+            <a href="/login" class="btn btn--primary">Connexion</a>
+            <a href="/register" class="btn btn--ghost">S'inscrire</a>
+        </div>
+    </header>
+
+    <main class="container forum-page">
+        <h1>Publications</h1>
+
+        <div class="forum-filters" id="category-filters" aria-label="Filtrer par catégorie"></div>
+
+        <section id="create-post" class="card forum-create" hidden>
+            <h2>Nouvelle publication</h2>
+            <p id="create-post-error" class="auth-message auth-message--error" hidden></p>
+            <form id="create-post-form">
+                <label for="post-title">Titre</label>
+                <input type="text" id="post-title" name="title" placeholder="Titre du sujet" required>
+
+                <label for="post-content">Contenu</label>
+                <textarea id="post-content" name="content" placeholder="De quoi voulez-vous parler ?" required></textarea>
+
+                <fieldset class="forum-categories-field">
+                    <legend>Catégories</legend>
+                    <div id="post-categories" class="forum-categories"></div>
+                </fieldset>
+
+                <button type="submit">Publier</button>
+            </form>
+        </section>
+
+        <p id="posts-empty" class="text-muted" hidden>Aucun post pour le moment.</p>
+        <ul id="posts-list" class="forum-posts"></ul>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Forum.js — Projet Ynov</p>
+    </footer>
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
