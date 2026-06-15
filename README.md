@@ -10,13 +10,13 @@ Forum web développé en **Node.js** dans le cadre du projet Ynov. Application a
 - Liste des publications sur `/app` avec filtres par catégorie
 - **Détail d'une publication** sur `/posts/:id`
 - **Commentaires** sur les publications (ajout, liste, suppression)
+- **Likes / dislikes** sur les publications et commentaires
 - Création de publications (catégories existantes ou nouvelles proposées)
 - Suppression de ses propres publications
 - Serveur HTTP avec fichiers statiques (CSS, JS, icônes SVG)
 - Base SQLite avec schéma automatique
 
 ### Prévu / en cours
-- Likes / dislikes
 - Édition de posts
 
 ## Stack technique
@@ -90,6 +90,8 @@ npm rebuild better-sqlite3
 | `/api/posts/:id`       | GET     | Non    | Détail d'une publication       |
 | `/api/posts/:id/comments` | GET  | Non    | Liste des commentaires         |
 | `/api/posts/:id/comments` | POST | Cookie | Ajouter un commentaire         |
+| `/api/posts/:id/reactions` | POST | Cookie | Like (+1) ou dislike (-1) sur un post |
+| `/api/comments/:id/reactions` | POST | Cookie | Like ou dislike sur un commentaire |
 | `/api/comments/:id`    | DELETE  | Cookie | Supprimer son commentaire      |
 | `/api/posts`           | POST    | Cookie | Créer une publication          |
 | `/api/posts/:id`       | DELETE  | Cookie | Supprimer sa publication       |

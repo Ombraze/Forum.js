@@ -40,6 +40,32 @@ function showError(message) {
   }
 }
 
+function renderReactionButtons(type, id, reactions) {
+  const r = reactions ?? { likes: 0, dislikes: 0, userReaction: null };
+  const userValue = Number(r.userReaction);
+  return `
+    <div class="reactions" data-reactions-for="${type}-${id}">
+      <button type="button" class="reaction-btn${userValue === 1 ? ' reaction-btn--active' : ''}" data-react="${type}" data-id="${id}" data-value="1">
+        J'aime <span>${r.likes}</span>
+      </button>
+      <button type="button" class="reaction-btn reaction-btn--down${userValue === -1 ? ' reaction-btn--active' : ''}" data-react="${type}" data-id="${id}" data-value="-1">
+        Je n'aime pas <span>${r.dislikes}</span>
+      </button>
+    </div>`;
+}
+
+function updateReactionAuthHint() {
+  const hint = document.getElementById('reaction-login-hint');
+  if (hint) hint.hidden = !!currentUser;
+}
+
+function updatePostReactions(reactions) {
+  const container = document.getElementById('post-reactions');
+  if (container && currentPostId) {
+    container.innerHTML = renderReactionButtons('post', currentPostId, reactions);
+  }
+}
+
 function renderBadges(names) {
   const container = document.getElementById('post-badges');
   if (!container) return;
@@ -91,6 +117,7 @@ function renderComments(comments) {
           }
         </div>
         <p class="comment__content">${escapeHtml(c.content)}</p>
+        ${renderReactionButtons('comment', c.id, c.reactions)}
       </li>`,
     )
     .join('');
@@ -125,6 +152,8 @@ function renderPost(post) {
   }
 
   if (detail) detail.removeAttribute('hidden');
+  updatePostReactions(post.reactions ?? { likes: 0, dislikes: 0, userReaction: null });
+  updateReactionAuthHint();
   updateCommentForm();
 }
 
@@ -141,6 +170,7 @@ async function updateNavbar() {
         <a href="/register" class="btn btn--ghost">S'inscrire</a>
       `;
       updateCommentForm();
+      updateReactionAuthHint();
       return;
     }
 
@@ -155,9 +185,11 @@ async function updateNavbar() {
       location.href = '/';
     });
     updateCommentForm();
+    updateReactionAuthHint();
   } catch {
     currentUser = null;
     updateCommentForm();
+    updateReactionAuthHint();
   }
 }
 
@@ -243,6 +275,49 @@ async function handleCreateComment(e) {
   }
 }
 
+async function handleReaction(type, id, value) {
+  if (!currentUser) {
+    const hint = document.getElementById('reaction-login-hint');
+    if (hint) hint.removeAttribute('hidden');
+    return;
+  }
+
+  const url = type === 'post'
+    ? `/api/posts/${id}/reactions`
+    : `/api/comments/${id}/reactions`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value }),
+    });
+
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      alert('Erreur serveur — redémarrez npm run dev puis réessayez.');
+      return;
+    }
+
+    if (!res.ok) {
+      alert(data.error || 'Impossible d\'enregistrer la réaction.');
+      return;
+    }
+
+    if (type === 'post') {
+      updatePostReactions(data.reactions);
+    } else {
+      await loadComments();
+    }
+  } catch {
+    alert('Impossible de contacter le serveur.');
+  }
+}
+
 async function handleDeletePost(postId) {
   if (!confirm('Supprimer cette publication ?')) return;
 
@@ -281,8 +356,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('comment-form')?.addEventListener('submit', handleCreateComment);
 
-  document.getElementById('comments-list')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-delete-comment]');
-    if (btn) handleDeleteComment(Number(btn.dataset.deleteComment));
+  document.addEventListener('click', (e) => {
+    const reactBtn = e.target.closest('[data-react]');
+    if (reactBtn) {
+      e.preventDefault();
+      handleReaction(
+        reactBtn.dataset.react,
+        Number(reactBtn.dataset.id),
+        Number(reactBtn.dataset.value),
+      );
+      return;
+    }
+
+    const deleteCommentBtn = e.target.closest('[data-delete-comment]');
+    if (deleteCommentBtn) {
+      handleDeleteComment(Number(deleteCommentBtn.dataset.deleteComment));
+    }
   });
 });

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { createComment, listComments } from '../../forum/comments.js';
 import { createPost, deletePost, getPostById, getPostDetail, listPosts } from '../../forum/posts.js';
-import { requireAuth } from '../../middleware/auth.js';
+import { getCommentReactionSummaries, getPostReactionSummary, setPostReaction } from '../../forum/reactions.js';
+import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.post('/', requireAuth, (req, res) => {
   }
 });
 
-router.get('/:id/comments', (req, res) => {
+router.get('/:id/comments', optionalAuth, (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
     return res.status(400).json({ error: 'Identifiant invalide.' });
@@ -50,12 +51,18 @@ router.get('/:id/comments', (req, res) => {
   }
 
   try {
-    const comments = listComments(postId).map((c) => ({
+    const rows = listComments(postId);
+    const reactionMap = getCommentReactionSummaries(
+      rows.map((c) => c.id),
+      req.user?.id,
+    );
+    const comments = rows.map((c) => ({
       id: c.id,
       content: c.content,
       author: c.author,
       userId: c.user_id,
       createdAt: c.created_at,
+      reactions: reactionMap[c.id] ?? { likes: 0, dislikes: 0, userReaction: null },
     }));
     res.json({ comments });
   } catch (err) {
@@ -81,7 +88,24 @@ router.post('/:id/comments', requireAuth, (req, res) => {
   }
 });
 
-router.get('/:id', (req, res) => {
+router.post('/:id/reactions', requireAuth, (req, res) => {
+  const postId = Number(req.params.id);
+  const value = Number(req.body?.value);
+
+  try {
+    const reactions = setPostReaction(postId, req.user.id, value);
+    res.json({ reactions });
+  } catch (err) {
+    const status = err.code === 'NOT_FOUND' ? 404 : 400;
+    const messages = {
+      NOT_FOUND: 'Publication introuvable.',
+      INVALID: 'Réaction invalide.',
+    };
+    res.status(status).json({ error: messages[err.code] ?? 'Erreur serveur' });
+  }
+});
+
+router.get('/:id', optionalAuth, (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
     return res.status(400).json({ error: 'Identifiant invalide.' });
@@ -102,6 +126,7 @@ router.get('/:id', (req, res) => {
         userId: p.user_id,
         createdAt: p.created_at,
         categories: p.categories ? p.categories.split(', ') : [],
+        reactions: getPostReactionSummary(postId, req.user?.id),
       },
     });
   } catch (err) {

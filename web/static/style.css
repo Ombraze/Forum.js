@@ -521,6 +521,35 @@ body.home main {
   min-height: 80px;
 }
 
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.reaction-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.reaction-btn--active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(232, 93, 76, 0.15);
+}
+
+.reaction-btn--down.reaction-btn--active {
+  color: #e57373;
+  border-color: #e57373;
+  background: rgba(229, 115, 115, 0.15);
+}
+
 /* Icônes */
 .icon {
   width: 1.2rem;
