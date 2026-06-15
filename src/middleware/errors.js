@@ -7,6 +7,7 @@ const errorTemplatePath = path.join(__dirname, '..', '..', 'web', 'templates', '
 
 let errorTemplate;
 
+// Charge le template HTML une seule fois en mémoire
 function getErrorTemplate() {
   if (!errorTemplate) {
     errorTemplate = fs.readFileSync(errorTemplatePath, 'utf8');
@@ -14,10 +15,12 @@ function getErrorTemplate() {
   return errorTemplate;
 }
 
+// Vérifie si la requête vient de l'API (renvoie du JSON) ou d'une page web (renvoie du HTML)
 function isApiRequest(req) {
   return req.path.startsWith('/api');
 }
 
+// Envoie une page d'erreur HTML avec le bon code et message
 function sendErrorPage(res, status, message) {
   const html = getErrorTemplate()
     .replaceAll('%%STATUS%%', String(status))
@@ -26,6 +29,7 @@ function sendErrorPage(res, status, message) {
   res.status(status).type('html').send(html);
 }
 
+// Middleware 404 : aucune route ne correspond à l'URL demandée
 export function notFoundHandler(req, res) {
   if (isApiRequest(req)) {
     return res.status(404).json({ error: 'Ressource introuvable' });
@@ -34,6 +38,7 @@ export function notFoundHandler(req, res) {
   sendErrorPage(res, 404, 'La page demandée n\'existe pas.');
 }
 
+// Middleware 500 : une erreur inattendue s'est produite
 export function errorHandler(err, req, res, next) {
   if (res.headersSent) {
     return next(err);

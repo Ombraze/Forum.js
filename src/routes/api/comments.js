@@ -5,6 +5,7 @@ import { requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
+// POST /api/comments/:id/reactions — liker ou disliker un commentaire
 router.post('/:id/reactions', requireAuth, (req, res) => {
   const commentId = Number(req.params.id);
   const value = Number(req.body?.value);
@@ -22,6 +23,7 @@ router.post('/:id/reactions', requireAuth, (req, res) => {
   }
 });
 
+// PUT /api/comments/:id — modifier un commentaire
 router.put('/:id', requireAuth, (req, res) => {
   const commentId = Number(req.params.id);
   const { content } = req.body ?? {};
@@ -40,6 +42,7 @@ router.put('/:id', requireAuth, (req, res) => {
   }
 });
 
+// DELETE /api/comments/:id — supprimer un commentaire
 router.delete('/:id', requireAuth, (req, res) => {
   const commentId = Number(req.params.id);
 

@@ -1,6 +1,7 @@
 import { getDb } from '../db/database.js';
 import { getPostById } from './posts.js';
 
+// Liste les commentaires d'un post, du plus ancien au plus récent
 export function listComments(postId) {
   return getDb()
     .prepare(`
@@ -13,11 +14,13 @@ export function listComments(postId) {
     .all(postId);
 }
 
+// Ajoute un commentaire sous un post
 export function createComment(postId, userId, content) {
   content = content?.trim() ?? '';
   if (!content) {
     throw Object.assign(new Error('Contenu requis'), { code: 'INVALID' });
   }
+  // On vérifie que le post existe avant d'ajouter le commentaire
   if (!getPostById(postId)) {
     throw Object.assign(new Error('Publication introuvable'), { code: 'NOT_FOUND' });
   }
@@ -29,12 +32,14 @@ export function createComment(postId, userId, content) {
   return result.lastInsertRowid;
 }
 
+// Récupère un commentaire par son id
 export function getCommentById(id) {
   return getDb()
     .prepare('SELECT id, user_id, post_id FROM comments WHERE id = ?')
     .get(id);
 }
 
+// Supprime un commentaire (seul l'auteur peut le faire)
 export function deleteComment(commentId, userId) {
   const comment = getCommentById(commentId);
   if (!comment) {
@@ -46,6 +51,7 @@ export function deleteComment(commentId, userId) {
   getDb().prepare('DELETE FROM comments WHERE id = ?').run(commentId);
 }
 
+// Modifie le contenu d'un commentaire (seul l'auteur peut le faire)
 export function updateComment(commentId, userId, content) {
   content = content?.trim() ?? '';
   if (!content) {

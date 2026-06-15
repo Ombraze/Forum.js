@@ -6,9 +6,11 @@ import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
+// GET /api/posts — liste les posts (avec filtres optionnels)
 router.get('/', optionalAuth, (req, res) => {
   try {
     const categoryId = req.query.category ? Number(req.query.category) : null;
+    // Les filtres mine/liked ne marchent que si l'utilisateur est connecté
     const wantsMine = (req.query.mine === 'true' || req.query.mine === '1') && req.user;
     const wantsLiked = (req.query.liked === 'true' || req.query.liked === '1') && req.user;
 
@@ -32,6 +34,7 @@ router.get('/', optionalAuth, (req, res) => {
   }
 });
 
+// POST /api/posts — créer un post
 router.post('/', requireAuth, (req, res) => {
   const { title, content, categoryIds, categoryNames } = req.body ?? {};
 
@@ -48,6 +51,7 @@ router.post('/', requireAuth, (req, res) => {
   }
 });
 
+// GET /api/posts/:id/comments — liste les commentaires d'un post
 router.get('/:id/comments', optionalAuth, (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
@@ -78,6 +82,7 @@ router.get('/:id/comments', optionalAuth, (req, res) => {
   }
 });
 
+// POST /api/posts/:id/comments — ajouter un commentaire
 router.post('/:id/comments', requireAuth, (req, res) => {
   const postId = Number(req.params.id);
   const { content } = req.body ?? {};
@@ -95,6 +100,7 @@ router.post('/:id/comments', requireAuth, (req, res) => {
   }
 });
 
+// POST /api/posts/:id/reactions — liker ou disliker un post
 router.post('/:id/reactions', requireAuth, (req, res) => {
   const postId = Number(req.params.id);
   const value = Number(req.body?.value);
@@ -112,6 +118,7 @@ router.post('/:id/reactions', requireAuth, (req, res) => {
   }
 });
 
+// GET /api/posts/:id — détail d'un post
 router.get('/:id', optionalAuth, (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
@@ -143,6 +150,7 @@ router.get('/:id', optionalAuth, (req, res) => {
   }
 });
 
+// PUT /api/posts/:id — modifier un post
 router.put('/:id', requireAuth, (req, res) => {
   const postId = Number(req.params.id);
   const { title, content, categoryIds, categoryNames } = req.body ?? {};
@@ -163,6 +171,7 @@ router.put('/:id', requireAuth, (req, res) => {
   }
 });
 
+// DELETE /api/posts/:id — supprimer un post
 router.delete('/:id', requireAuth, (req, res) => {
   const postId = Number(req.params.id);
 
