@@ -37,6 +37,22 @@
             <p id="post-meta" class="forum-post__meta"></p>
             <div id="post-content" class="post-detail__content"></div>
         </article>
+
+        <section id="comments-section" class="comments" hidden>
+            <h2>Commentaires</h2>
+            <p id="comments-empty" class="text-muted" hidden>Aucun commentaire pour le moment.</p>
+            <ul id="comments-list" class="comments-list"></ul>
+
+            <form id="comment-form" class="comment-form card" hidden>
+                <label for="comment-content">Votre commentaire</label>
+                <textarea id="comment-content" name="content" placeholder="Écrivez votre réponse…" required></textarea>
+                <p id="comment-error" class="auth-message auth-message--error" hidden></p>
+                <button type="submit">Commenter</button>
+            </form>
+            <p id="comment-login-hint" class="text-muted" hidden>
+                <a href="/login">Connectez-vous</a> pour commenter.
+            </p>
+        </section>
     </main>
 
     <footer class="site-footer">

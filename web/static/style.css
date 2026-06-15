@@ -478,6 +478,49 @@ body.home main {
   white-space: pre-wrap;
 }
 
+.comments {
+  margin-top: 1.5rem;
+}
+
+.comments h2 {
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.comments-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.comment__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment__meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.comment__content {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.comment-form {
+  margin-top: 1rem;
+}
+
+.comment-form textarea {
+  min-height: 80px;
+}
+
 /* Icônes */
 .icon {
   width: 1.2rem;

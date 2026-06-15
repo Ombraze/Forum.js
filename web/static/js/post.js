@@ -1,4 +1,5 @@
 let currentUser = null;
+let currentPostId = null;
 
 function getPostIdFromUrl() {
   const match = location.pathname.match(/^\/posts\/(\d+)$/);
@@ -28,9 +29,11 @@ function showError(message) {
   const loading = document.getElementById('post-loading');
   const error = document.getElementById('post-error');
   const detail = document.getElementById('post-detail');
+  const comments = document.getElementById('comments-section');
 
   if (loading) loading.setAttribute('hidden', '');
   if (detail) detail.setAttribute('hidden', '');
+  if (comments) comments.setAttribute('hidden', '');
   if (error) {
     error.textContent = message;
     error.removeAttribute('hidden');
@@ -46,11 +49,60 @@ function renderBadges(names) {
     .join('');
 }
 
+function updateCommentForm() {
+  const form = document.getElementById('comment-form');
+  const hint = document.getElementById('comment-login-hint');
+  if (!form || !hint) return;
+
+  if (currentUser) {
+    form.removeAttribute('hidden');
+    hint.setAttribute('hidden', '');
+  } else {
+    form.setAttribute('hidden', '');
+    hint.removeAttribute('hidden');
+  }
+}
+
+function renderComments(comments) {
+  const section = document.getElementById('comments-section');
+  const list = document.getElementById('comments-list');
+  const empty = document.getElementById('comments-empty');
+  if (!section || !list) return;
+
+  section.removeAttribute('hidden');
+
+  if (!comments.length) {
+    list.innerHTML = '';
+    empty?.removeAttribute('hidden');
+    return;
+  }
+
+  empty?.setAttribute('hidden', '');
+  list.innerHTML = comments
+    .map(
+      (c) => `
+      <li class="card comment">
+        <div class="comment__header">
+          <p class="comment__meta">par ${escapeHtml(c.author)} — ${formatDate(c.createdAt)}</p>
+          ${
+            currentUser?.id === c.userId
+              ? `<button type="button" class="btn btn--ghost btn--sm forum-post__delete" data-delete-comment="${c.id}">Supprimer</button>`
+              : ''
+          }
+        </div>
+        <p class="comment__content">${escapeHtml(c.content)}</p>
+      </li>`,
+    )
+    .join('');
+}
+
 function renderPost(post) {
   const loading = document.getElementById('post-loading');
   const error = document.getElementById('post-error');
   const detail = document.getElementById('post-detail');
   const deleteBtn = document.getElementById('post-delete');
+
+  currentPostId = post.id;
 
   if (loading) loading.setAttribute('hidden', '');
   if (error) error.setAttribute('hidden', '');
@@ -66,13 +118,14 @@ function renderPost(post) {
   if (deleteBtn) {
     if (currentUser?.id === post.userId) {
       deleteBtn.removeAttribute('hidden');
-      deleteBtn.onclick = () => handleDelete(post.id);
+      deleteBtn.onclick = () => handleDeletePost(post.id);
     } else {
       deleteBtn.setAttribute('hidden', '');
     }
   }
 
   if (detail) detail.removeAttribute('hidden');
+  updateCommentForm();
 }
 
 async function updateNavbar() {
@@ -87,6 +140,7 @@ async function updateNavbar() {
         <a href="/login" class="btn btn--primary">Connexion</a>
         <a href="/register" class="btn btn--ghost">S'inscrire</a>
       `;
+      updateCommentForm();
       return;
     }
 
@@ -100,8 +154,10 @@ async function updateNavbar() {
       await fetch('/api/auth/logout', { method: 'POST' });
       location.href = '/';
     });
+    updateCommentForm();
   } catch {
     currentUser = null;
+    updateCommentForm();
   }
 }
 
@@ -122,12 +178,72 @@ async function loadPost() {
     }
 
     renderPost(data.post);
+    await loadComments();
   } catch {
     showError('Impossible de charger la publication.');
   }
 }
 
-async function handleDelete(postId) {
+async function loadComments() {
+  if (!currentPostId) return;
+
+  try {
+    const res = await fetch(`/api/posts/${currentPostId}/comments`);
+    if (!res.ok) throw new Error('fetch failed');
+    const { comments } = await res.json();
+    renderComments(comments);
+  } catch {
+    const section = document.getElementById('comments-section');
+    if (section) {
+      section.removeAttribute('hidden');
+      section.innerHTML = '<p class="text-muted">Impossible de charger les commentaires.</p>';
+    }
+  }
+}
+
+function showCommentError(message) {
+  const el = document.getElementById('comment-error');
+  if (!el) return;
+  if (message) {
+    el.textContent = message;
+    el.removeAttribute('hidden');
+  } else {
+    el.setAttribute('hidden', '');
+  }
+}
+
+async function handleCreateComment(e) {
+  e.preventDefault();
+  showCommentError('');
+
+  const form = e.target;
+  const content = form.content.value.trim();
+  if (!content) {
+    showCommentError('Le commentaire ne peut pas être vide.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/posts/${currentPostId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      showCommentError(data.error || 'Erreur lors de l\'ajout du commentaire');
+      return;
+    }
+
+    form.reset();
+    await loadComments();
+  } catch {
+    showCommentError('Impossible de contacter le serveur.');
+  }
+}
+
+async function handleDeletePost(postId) {
   if (!confirm('Supprimer cette publication ?')) return;
 
   try {
@@ -143,7 +259,30 @@ async function handleDelete(postId) {
   }
 }
 
+async function handleDeleteComment(commentId) {
+  if (!confirm('Supprimer ce commentaire ?')) return;
+
+  try {
+    const res = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || 'Impossible de supprimer le commentaire.');
+      return;
+    }
+    await loadComments();
+  } catch {
+    alert('Impossible de contacter le serveur.');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await updateNavbar();
   await loadPost();
+
+  document.getElementById('comment-form')?.addEventListener('submit', handleCreateComment);
+
+  document.getElementById('comments-list')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-delete-comment]');
+    if (btn) handleDeleteComment(Number(btn.dataset.deleteComment));
+  });
 });

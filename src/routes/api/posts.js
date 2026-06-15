@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { createPost, deletePost, getPostDetail, listPosts } from '../../forum/posts.js';
+import { createComment, listComments } from '../../forum/comments.js';
+import { createPost, deletePost, getPostById, getPostDetail, listPosts } from '../../forum/posts.js';
 import { requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
@@ -36,6 +37,47 @@ router.post('/', requireAuth, (req, res) => {
       INVALID_CATEGORY: 'Catégorie invalide.',
     };
     res.status(400).json({ error: messages[err.code] ?? 'Erreur lors de la création' });
+  }
+});
+
+router.get('/:id/comments', (req, res) => {
+  const postId = Number(req.params.id);
+  if (!postId) {
+    return res.status(400).json({ error: 'Identifiant invalide.' });
+  }
+  if (!getPostById(postId)) {
+    return res.status(404).json({ error: 'Publication introuvable.' });
+  }
+
+  try {
+    const comments = listComments(postId).map((c) => ({
+      id: c.id,
+      content: c.content,
+      author: c.author,
+      userId: c.user_id,
+      createdAt: c.created_at,
+    }));
+    res.json({ comments });
+  } catch (err) {
+    console.error('erreur list comments:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+router.post('/:id/comments', requireAuth, (req, res) => {
+  const postId = Number(req.params.id);
+  const { content } = req.body ?? {};
+
+  try {
+    const commentId = createComment(postId, req.user.id, content);
+    res.status(201).json({ id: commentId, message: 'Commentaire ajouté' });
+  } catch (err) {
+    const status = err.code === 'NOT_FOUND' ? 404 : 400;
+    const messages = {
+      INVALID: 'Le commentaire ne peut pas être vide.',
+      NOT_FOUND: 'Publication introuvable.',
+    };
+    res.status(status).json({ error: messages[err.code] ?? 'Erreur lors de l\'ajout' });
   }
 });
 

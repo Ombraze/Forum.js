@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { initDb } from '../db/database.js';
 import authRouter from '../routes/api/auth.js';
 import categoriesRouter from '../routes/api/categories.js';
+import commentsRouter from '../routes/api/comments.js';
 import postsRouter from '../routes/api/posts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,7 @@ app.get('/posts/:id', servePage('post.html'));
 app.use('/api/auth', authRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/posts', postsRouter);
+app.use('/api/comments', commentsRouter);
 
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
