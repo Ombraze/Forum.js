@@ -1,12 +1,15 @@
 {
+
+  
+
   "name": "forum.js",
   "version": "1.0.0",
   "description": "Forum web — Node.js, SQLite, JWT",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node src/server/server.js",
+    "dev": "node --watch src/server/server.js"
   },
   "engines": {
     "node": ">=18"
@@ -20,3 +23,5 @@
     "jsonwebtoken": "^9.0.3"
   }
 }
+
+

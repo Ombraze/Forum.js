@@ -2,21 +2,23 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initDb } from './src/db/database.js';
-import authRouter from './src/routes/api/auth.js';
-import categoriesRouter from './src/routes/api/categories.js';
-import postsRouter from './src/routes/api/posts.js';
+import cookieParser from 'cookie-parser';
+import { initDb } from '../db/database.js';
+import authRouter from '../routes/api/auth.js';
+import categoriesRouter from '../routes/api/categories.js';
+import postsRouter from '../routes/api/posts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8080;
-const templatesDir = path.join(__dirname, 'web', 'templates');
-const staticDir = path.join(__dirname, 'web', 'static');
+const templatesDir = path.join(__dirname, '..', '..', 'web', 'templates');
+const staticDir = path.join(__dirname, '..', '..', 'web', 'static');
 
 initDb();
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use('/static', express.static(staticDir));
 
 function servePage(name) {
