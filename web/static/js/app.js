@@ -82,74 +82,46 @@ function renderPosts(posts) {
     .join('');
 }
 
-function renderUserFilters() {
-  const container = document.getElementById('user-filters');
-  if (!container) return;
-
-  if (!currentUser) {
-    activeUserFilter = null;
-    container.setAttribute('hidden', '');
-    container.innerHTML = '';
-    return;
-  }
-
-  container.removeAttribute('hidden');
-  const buttons = [
-    {
-      value: '',
-      label: 'Toutes les publications',
-      active: activeUserFilter === null,
-    },
-    {
-      value: 'mine',
-      label: 'Mes publications',
-      active: activeUserFilter === 'mine',
-    },
-    {
-      value: 'liked',
-      label: 'Posts likés',
-      active: activeUserFilter === 'liked',
-    },
-  ];
-
-  container.innerHTML = buttons
-    .map(
-      ({ value, label, active }) => `
-      <button type="button" class="forum-filter${active ? ' forum-filter--active' : ''}" data-user-filter="${value}">
-        ${escapeHtml(label)}
-      </button>`,
-    )
-    .join('');
-
-  container.querySelectorAll('[data-user-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const value = btn.dataset.userFilter;
-      activeUserFilter = value || null;
-      renderUserFilters();
-      loadPosts();
-    });
-  });
-}
-
 function renderFilters() {
   const container = document.getElementById('category-filters');
   if (!container) return;
 
+  const allActive = activeCategory === null && activeUserFilter === null;
+
   const buttons = [
-    `<button type="button" class="forum-filter${activeCategory === null ? ' forum-filter--active' : ''}" data-category="">Toutes</button>`,
+    `<button type="button" class="forum-filter${allActive ? ' forum-filter--active' : ''}" data-filter="all">Toutes</button>`,
+  ];
+
+  if (currentUser) {
+    buttons.push(
+      `<button type="button" class="forum-filter${activeUserFilter === 'mine' ? ' forum-filter--active' : ''}" data-filter="mine">Mes posts</button>`,
+      `<button type="button" class="forum-filter${activeUserFilter === 'liked' ? ' forum-filter--active' : ''}" data-filter="liked">Posts likés</button>`,
+    );
+  }
+
+  buttons.push(
     ...categories.map(
       (c) => `
       <button type="button" class="forum-filter${activeCategory === c.id ? ' forum-filter--active' : ''}" data-category="${c.id}">
         ${escapeHtml(c.name)}
       </button>`,
     ),
-  ];
+  );
 
   container.innerHTML = buttons.join('');
   container.querySelectorAll('.forum-filter').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const value = btn.dataset.category;
-      activeCategory = value ? Number(value) : null;
+      if (btn.dataset.filter === 'all') {
+        activeCategory = null;
+        activeUserFilter = null;
+      } else if (btn.dataset.filter === 'mine') {
+        activeUserFilter = activeUserFilter === 'mine' ? null : 'mine';
+      } else if (btn.dataset.filter === 'liked') {
+        activeUserFilter = activeUserFilter === 'liked' ? null : 'liked';
+      } else {
+        const value = btn.dataset.category;
+        activeCategory = value ? Number(value) : null;
+      }
       renderFilters();
       loadPosts();
     });
@@ -196,7 +168,8 @@ async function updateNavbar() {
       currentUser = null;
       showCreateForm(false);
       showNavbarLoggedOut();
-      renderUserFilters();
+      activeUserFilter = null;
+      renderFilters();
       return;
     }
 
@@ -211,12 +184,13 @@ async function updateNavbar() {
       location.href = '/';
     });
     showCreateForm(true);
-    renderUserFilters();
+    renderFilters();
   } catch {
     currentUser = null;
     showCreateForm(false);
     showNavbarLoggedOut();
-    renderUserFilters();
+    activeUserFilter = null;
+    renderFilters();
   }
 }
 
@@ -234,8 +208,8 @@ async function loadPosts() {
   try {
     const params = new URLSearchParams();
     if (activeCategory) params.set('category', String(activeCategory));
-    if (activeUserFilter === 'mine') params.set('mine', '1');
-    if (activeUserFilter === 'liked') params.set('liked', '1');
+    if (activeUserFilter === 'mine') params.set('mine', 'true');
+    if (activeUserFilter === 'liked') params.set('liked', 'true');
 
     const query = params.toString();
     const url = query ? `/api/posts?${query}` : '/api/posts';

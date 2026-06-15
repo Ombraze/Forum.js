@@ -86,7 +86,7 @@ npm rebuild better-sqlite3
 | `/api/auth/logout`     | POST    | Cookie | Déconnexion                    |
 | `/api/auth/me`         | GET     | Cookie | Profil de l'utilisateur        |
 | `/api/categories`      | GET     | Non    | Liste des catégories           |
-| `/api/posts`           | GET     | Non*   | Liste des publications (`?category=`, `?mine=1`, `?liked=1`) |
+| `/api/posts`           | GET     | Non    | Liste des publications (`?category=`, `?mine=true`, `?liked=true`) |
 | `/api/posts/:id`       | GET     | Non    | Détail d'une publication       |
 | `/api/posts/:id/comments` | GET  | Non    | Liste des commentaires         |
 | `/api/posts/:id/comments` | POST | Cookie | Ajouter un commentaire         |

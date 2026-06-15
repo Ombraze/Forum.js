@@ -9,12 +9,8 @@ const router = Router();
 router.get('/', optionalAuth, (req, res) => {
   try {
     const categoryId = req.query.category ? Number(req.query.category) : null;
-    const wantsMine = req.query.mine === '1' || req.query.mine === 'true';
-    const wantsLiked = req.query.liked === '1' || req.query.liked === 'true';
-
-    if ((wantsMine || wantsLiked) && !req.user) {
-      return res.status(401).json({ error: 'Authentification requise' });
-    }
+    const wantsMine = (req.query.mine === 'true' || req.query.mine === '1') && req.user;
+    const wantsLiked = (req.query.liked === 'true' || req.query.liked === '1') && req.user;
 
     const posts = listPosts({
       categoryId: categoryId || null,
