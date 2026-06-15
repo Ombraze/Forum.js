@@ -1,5 +1,3 @@
-import { authHeaders, clearToken, getToken } from './auth-storage.js';
-
 let categories = [];
 let activeCategory = null;
 let currentUser = null;
@@ -114,22 +112,26 @@ function showCreateForm(show) {
   if (section) section.hidden = !show;
 }
 
+function showNavbarLoggedOut() {
+  const actions = document.getElementById('navbar-actions');
+  if (!actions) return;
+
+  actions.innerHTML = `
+    <a href="/login" class="btn btn--primary">Connexion</a>
+    <a href="/register" class="btn btn--ghost">S'inscrire</a>
+  `;
+}
+
 async function updateNavbar() {
   const actions = document.getElementById('navbar-actions');
   if (!actions) return;
 
-  if (!getToken()) {
-    currentUser = null;
-    showCreateForm(false);
-    return;
-  }
-
   try {
-    const res = await fetch('/api/auth/me', { headers: authHeaders() });
+    const res = await fetch('/api/auth/me');
     if (!res.ok) {
-      clearToken();
       currentUser = null;
       showCreateForm(false);
+      showNavbarLoggedOut();
       return;
     }
 
@@ -139,15 +141,15 @@ async function updateNavbar() {
       <span class="forum-user">${escapeHtml(user.username)}</span>
       <button type="button" id="logout-btn" class="btn btn--ghost">Déconnexion</button>
     `;
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-      clearToken();
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
       location.href = '/';
     });
     showCreateForm(true);
   } catch {
-    clearToken();
     currentUser = null;
     showCreateForm(false);
+    showNavbarLoggedOut();
   }
 }
 
@@ -193,17 +195,12 @@ async function handleDeletePost(postId) {
   if (!confirm('Supprimer cette publication ?')) return;
 
   try {
-    const res = await fetch(`/api/posts/${postId}`, {
-      method: 'DELETE',
-      headers: authHeaders(),
-    });
-
+    const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
     if (!res.ok) {
       const data = await res.json();
       alert(data.error || 'Impossible de supprimer la publication.');
       return;
     }
-
     await loadPosts();
   } catch {
     alert('Impossible de contacter le serveur.');
@@ -226,7 +223,7 @@ async function handleCreatePost(e) {
   try {
     const res = await fetch('/api/posts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: form.title.value,
         content: form.content.value,

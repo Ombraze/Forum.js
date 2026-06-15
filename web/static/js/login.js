@@ -1,5 +1,3 @@
-import { setToken } from './auth-storage.js';
-
 function showMessage(text, type) {
   let el = document.getElementById('auth-message');
   if (!el) {
@@ -37,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      setToken(data.token);
       location.href = '/app';
     } catch {
       showMessage('Impossible de contacter le serveur.', 'error');

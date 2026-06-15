@@ -1,7 +1,7 @@
 import { getSession } from '../auth/session.js';
 import { getUserById } from '../auth/users.js';
 
-const COOKIE_NAME = 'sid';
+export const COOKIE_NAME = 'sid';
 
 export function requireAuth(req, res, next) {
   const session = getSession(req.cookies?.[COOKIE_NAME]);
