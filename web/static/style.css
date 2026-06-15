@@ -432,6 +432,25 @@ button[type="submit"]:hover,
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.forum-category-propose label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.forum-category-propose input {
+  width: 100%;
+}
+
+.forum-hint {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 .forum-checkbox {
@@ -454,6 +473,25 @@ button[type="submit"]:hover,
   padding: 1.25rem;
 }
 
+.forum-post__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.forum-post__delete {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--danger, #e57373);
+}
+
+.btn--sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+}
+
 .forum-post h2 {
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
@@ -467,11 +505,6 @@ button[type="submit"]:hover,
 .forum-post__meta {
   color: var(--text-secondary);
   font-size: 0.875rem;
-  margin-bottom: 0.75rem;
-}
-
-.forum-post__excerpt {
-  color: var(--text-secondary);
 }
 
 .forum-badges {

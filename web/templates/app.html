@@ -38,13 +38,18 @@
                 <fieldset class="forum-categories-field">
                     <legend>Catégories</legend>
                     <div id="post-categories" class="forum-categories"></div>
+                    <div class="forum-category-propose">
+                        <label for="post-new-categories">Proposer une catégorie</label>
+                        <input type="text" id="post-new-categories" name="newCategories" placeholder="Ex : Node.js, Skin Care, Game...">
+                        <p class="forum-hint">Séparez plusieurs noms par des virgules</p>
+                    </div>
                 </fieldset>
 
                 <button type="submit">Publier</button>
             </form>
         </section>
 
-        <p id="posts-empty" class="text-muted" hidden>Aucun post pour le moment.</p>
+        <p id="posts-empty" class="text-muted" hidden>Aucune publication pour le moment.</p>
         <ul id="posts-list" class="forum-posts"></ul>
     </main>
 

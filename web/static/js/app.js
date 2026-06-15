@@ -15,10 +15,6 @@ function formatDate(iso) {
   });
 }
 
-function excerpt(text, max = 200) {
-  return text.length > max ? `${text.slice(0, max)}…` : text;
-}
-
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -43,8 +39,8 @@ function renderPosts(posts) {
 
   if (!posts.length) {
     empty.textContent = activeCategory
-      ? 'Aucun post dans cette catégorie.'
-      : 'Aucun post pour le moment.';
+      ? 'Aucune publication dans cette catégorie.'
+      : 'Aucune publication pour le moment.';
     empty.removeAttribute('hidden');
     return;
   }
@@ -54,14 +50,20 @@ function renderPosts(posts) {
     .map(
       (p) => `
       <li class="card forum-post">
-        ${renderCategoryBadges(p.categories)}
+        <div class="forum-post__header">
+          ${renderCategoryBadges(p.categories)}
+          ${
+            currentUser?.id === p.userId
+              ? `<button type="button" class="btn btn--ghost btn--sm forum-post__delete" data-delete-post="${p.id}" aria-label="Supprimer la publication">Supprimer</button>`
+              : ''
+          }
+        </div>
         <h2>
           <a href="/posts/${p.id}">${escapeHtml(p.title)}</a>
         </h2>
         <p class="forum-post__meta">
           par ${escapeHtml(p.author)} — ${formatDate(p.createdAt)}
         </p>
-        <p class="forum-post__excerpt">${escapeHtml(excerpt(p.content))}</p>
       </li>`,
     )
     .join('');
@@ -187,6 +189,27 @@ function showCreateError(message) {
   }
 }
 
+async function handleDeletePost(postId) {
+  if (!confirm('Supprimer cette publication ?')) return;
+
+  try {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || 'Impossible de supprimer la publication.');
+      return;
+    }
+
+    await loadPosts();
+  } catch {
+    alert('Impossible de contacter le serveur.');
+  }
+}
+
 async function handleCreatePost(e) {
   e.preventDefault();
   showCreateError('');
@@ -195,6 +218,10 @@ async function handleCreatePost(e) {
   const categoryIds = [...form.querySelectorAll('input[name="category"]:checked')].map(
     (input) => Number(input.value),
   );
+  const categoryNames = (form.newCategories?.value ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
 
   try {
     const res = await fetch('/api/posts', {
@@ -204,6 +231,7 @@ async function handleCreatePost(e) {
         title: form.title.value,
         content: form.content.value,
         categoryIds,
+        categoryNames,
       }),
     });
 
@@ -214,6 +242,7 @@ async function handleCreatePost(e) {
     }
 
     form.reset();
+    await loadCategories();
     await loadPosts();
   } catch {
     showCreateError('Impossible de contacter le serveur.');
@@ -234,4 +263,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   document.getElementById('create-post-form')?.addEventListener('submit', handleCreatePost);
+
+  document.getElementById('posts-list')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-delete-post]');
+    if (btn) handleDeletePost(Number(btn.dataset.deletePost));
+  });
 });

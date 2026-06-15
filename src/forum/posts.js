@@ -1,5 +1,5 @@
 import { getDb } from '../db/database.js';
-import { getCategoryById } from './categories.js';
+import { createCategory, getCategoryById } from './categories.js';
 
 export function listPosts(categoryId = null) {
   let query = `
@@ -8,6 +8,7 @@ export function listPosts(categoryId = null) {
       p.title,
       p.content,
       p.created_at,
+      p.user_id,
       u.username AS author,
       GROUP_CONCAT(c.name, ', ') AS categories
     FROM posts p
@@ -33,7 +34,7 @@ export function listPosts(categoryId = null) {
   return getDb().prepare(query).all(...params);
 }
 
-export function createPost(userId, title, content, categoryIds) {
+export function createPost(userId, title, content, categoryIds, categoryNames = []) {
   title = title?.trim() ?? '';
   content = content?.trim() ?? '';
 
@@ -42,11 +43,23 @@ export function createPost(userId, title, content, categoryIds) {
   }
 
   const ids = [...new Set((categoryIds ?? []).map(Number).filter((id) => id > 0))];
-  if (!ids.length) {
+
+  const names = [...new Set(
+    (categoryNames ?? [])
+      .map((name) => name?.trim())
+      .filter((name) => name),
+  )];
+
+  for (const name of names) {
+    ids.push(createCategory(name).id);
+  }
+
+  const uniqueIds = [...new Set(ids)];
+  if (!uniqueIds.length) {
     throw Object.assign(new Error('Au moins une catégorie requise'), { code: 'NO_CATEGORY' });
   }
 
-  for (const id of ids) {
+  for (const id of uniqueIds) {
     if (!getCategoryById(id)) {
       throw Object.assign(new Error('Catégorie invalide'), { code: 'INVALID_CATEGORY' });
     }
@@ -63,11 +76,28 @@ export function createPost(userId, title, content, categoryIds) {
   const create = db.transaction(() => {
     const result = insertPost.run(userId, title, content);
     const postId = result.lastInsertRowid;
-    for (const categoryId of ids) {
+    for (const categoryId of uniqueIds) {
       linkCategory.run(postId, categoryId);
     }
     return postId;
   });
 
   return create();
+}
+
+export function getPostById(id) {
+  return getDb()
+    .prepare('SELECT id, user_id, title FROM posts WHERE id = ?')
+    .get(id);
+}
+
+export function deletePost(postId, userId) {
+  const post = getPostById(postId);
+  if (!post) {
+    throw Object.assign(new Error('Publication introuvable'), { code: 'NOT_FOUND' });
+  }
+  if (post.user_id !== userId) {
+    throw Object.assign(new Error('Non autorisé'), { code: 'FORBIDDEN' });
+  }
+  getDb().prepare('DELETE FROM posts WHERE id = ?').run(postId);
 }
