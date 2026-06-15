@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteComment } from '../../forum/comments.js';
+import { deleteComment, updateComment } from '../../forum/comments.js';
 import { setCommentReaction } from '../../forum/reactions.js';
 import { requireAuth } from '../../middleware/auth.js';
 
@@ -19,6 +19,24 @@ router.post('/:id/reactions', requireAuth, (req, res) => {
       INVALID: 'Réaction invalide.',
     };
     res.status(status).json({ error: messages[err.code] ?? 'Erreur serveur' });
+  }
+});
+
+router.put('/:id', requireAuth, (req, res) => {
+  const commentId = Number(req.params.id);
+  const { content } = req.body ?? {};
+
+  try {
+    updateComment(commentId, req.user.id, content);
+    res.json({ message: 'Commentaire modifié' });
+  } catch (err) {
+    const status = err.code === 'NOT_FOUND' ? 404 : err.code === 'FORBIDDEN' ? 403 : 400;
+    const messages = {
+      INVALID: 'Le commentaire ne peut pas être vide.',
+      NOT_FOUND: 'Commentaire introuvable.',
+      FORBIDDEN: 'Vous ne pouvez modifier que vos propres commentaires.',
+    };
+    res.status(status).json({ error: messages[err.code] ?? 'Erreur lors de la modification' });
   }
 });
 

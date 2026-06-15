@@ -550,6 +550,34 @@ body.home main {
   background: rgba(229, 115, 115, 0.15);
 }
 
+.post-owner-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.comment__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.comment__edit-form textarea {
+  min-height: 70px;
+  margin-bottom: 0.5rem;
+}
+
+.comment__edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* Icônes */
 .icon {
   width: 1.2rem;

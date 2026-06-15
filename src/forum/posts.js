@@ -34,14 +34,7 @@ export function listPosts(categoryId = null) {
   return getDb().prepare(query).all(...params);
 }
 
-export function createPost(userId, title, content, categoryIds, categoryNames = []) {
-  title = title?.trim() ?? '';
-  content = content?.trim() ?? '';
-
-  if (!title || !content) {
-    throw Object.assign(new Error('Titre et contenu requis'), { code: 'INVALID' });
-  }
-
+function resolveCategoryIds(categoryIds, categoryNames) {
   const ids = [...new Set((categoryIds ?? []).map(Number).filter((id) => id > 0))];
 
   const names = [...new Set(
@@ -65,6 +58,19 @@ export function createPost(userId, title, content, categoryIds, categoryNames = 
     }
   }
 
+  return uniqueIds;
+}
+
+export function createPost(userId, title, content, categoryIds, categoryNames = []) {
+  title = title?.trim() ?? '';
+  content = content?.trim() ?? '';
+
+  if (!title || !content) {
+    throw Object.assign(new Error('Titre et contenu requis'), { code: 'INVALID' });
+  }
+
+  const uniqueIds = resolveCategoryIds(categoryIds, categoryNames);
+
   const db = getDb();
   const insertPost = db.prepare(
     'INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)',
@@ -83,6 +89,49 @@ export function createPost(userId, title, content, categoryIds, categoryNames = 
   });
 
   return create();
+}
+
+export function getPostCategoryIds(postId) {
+  return getDb()
+    .prepare('SELECT category_id FROM post_categories WHERE post_id = ?')
+    .all(postId)
+    .map((row) => row.category_id);
+}
+
+export function updatePost(postId, userId, title, content, categoryIds, categoryNames = []) {
+  const post = getPostById(postId);
+  if (!post) {
+    throw Object.assign(new Error('Publication introuvable'), { code: 'NOT_FOUND' });
+  }
+  if (post.user_id !== userId) {
+    throw Object.assign(new Error('Non autorisé'), { code: 'FORBIDDEN' });
+  }
+
+  title = title?.trim() ?? '';
+  content = content?.trim() ?? '';
+
+  if (!title || !content) {
+    throw Object.assign(new Error('Titre et contenu requis'), { code: 'INVALID' });
+  }
+
+  const uniqueIds = resolveCategoryIds(categoryIds, categoryNames);
+
+  const db = getDb();
+  const linkCategory = db.prepare(
+    'INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)',
+  );
+
+  const save = db.transaction(() => {
+    db.prepare(
+      'UPDATE posts SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    ).run(title, content, postId);
+    db.prepare('DELETE FROM post_categories WHERE post_id = ?').run(postId);
+    for (const categoryId of uniqueIds) {
+      linkCategory.run(postId, categoryId);
+    }
+  });
+
+  save();
 }
 
 export function getPostById(id) {

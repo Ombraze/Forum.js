@@ -29,17 +29,48 @@
         <article id="post-detail" class="card post-detail" hidden>
             <div class="post-detail__header">
                 <div id="post-badges" class="forum-badges"></div>
-                <button type="button" id="post-delete" class="btn btn--ghost btn--sm forum-post__delete" hidden>
-                    Supprimer
-                </button>
+                <div id="post-owner-actions" class="post-owner-actions" hidden>
+                    <button type="button" id="post-edit-btn" class="btn btn--ghost btn--sm">Modifier</button>
+                    <button type="button" id="post-delete" class="btn btn--ghost btn--sm forum-post__delete">Supprimer</button>
+                </div>
             </div>
-            <h1 id="post-title"></h1>
-            <p id="post-meta" class="forum-post__meta"></p>
-            <div id="post-content" class="post-detail__content"></div>
-            <div id="post-reactions" class="reactions"></div>
-            <p id="reaction-login-hint" class="forum-hint" hidden>
-                <a href="/login">Connectez-vous</a> pour liker ou disliker.
-            </p>
+
+            <div id="post-view">
+                <h1 id="post-title"></h1>
+                <p id="post-meta" class="forum-post__meta"></p>
+                <div id="post-content" class="post-detail__content"></div>
+                <div id="post-reactions" class="reactions"></div>
+                <p id="reaction-login-hint" class="forum-hint" hidden>
+                    <a href="/login">Connectez-vous</a> pour liker ou disliker.
+                </p>
+            </div>
+
+            <section id="post-edit" class="forum-create" hidden>
+                <h2>Modifier la publication</h2>
+                <p id="edit-post-error" class="auth-message auth-message--error" hidden></p>
+                <form id="edit-post-form">
+                    <label for="edit-post-title">Titre</label>
+                    <input type="text" id="edit-post-title" name="title" required>
+
+                    <label for="edit-post-content">Contenu</label>
+                    <textarea id="edit-post-content" name="content" required></textarea>
+
+                    <fieldset class="forum-categories-field">
+                        <legend>Catégories</legend>
+                        <div id="edit-post-categories" class="forum-categories"></div>
+                        <div class="forum-category-propose">
+                            <label for="edit-post-new-categories">Proposer une catégorie</label>
+                            <input type="text" id="edit-post-new-categories" name="newCategories" placeholder="Ex : Node.js, DevOps…">
+                            <p class="forum-hint">Séparez plusieurs noms par des virgules</p>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions">
+                        <button type="submit">Enregistrer</button>
+                        <button type="button" id="edit-post-cancel" class="btn btn--ghost">Annuler</button>
+                    </div>
+                </form>
+            </section>
         </article>
 
         <section id="comments-section" class="comments" hidden>

@@ -92,8 +92,10 @@ npm rebuild better-sqlite3
 | `/api/posts/:id/comments` | POST | Cookie | Ajouter un commentaire         |
 | `/api/posts/:id/reactions` | POST | Cookie | Like (+1) ou dislike (-1) sur un post |
 | `/api/comments/:id/reactions` | POST | Cookie | Like ou dislike sur un commentaire |
+| `/api/comments/:id`    | PUT     | Cookie | Modifier son commentaire         |
 | `/api/comments/:id`    | DELETE  | Cookie | Supprimer son commentaire      |
 | `/api/posts`           | POST    | Cookie | Créer une publication          |
+| `/api/posts/:id`       | PUT     | Cookie | Modifier sa publication (titre, contenu, catégories) |
 | `/api/posts/:id`       | DELETE  | Cookie | Supprimer sa publication       |
 
 ## Structure du projet
@@ -127,4 +129,4 @@ Forum.js/
 
 ## Équipe
 
-Projet réalisé par l'équipe **Ombraze** — Ynov.
+Projet réalisé par  **Ombraze** — Ynov.

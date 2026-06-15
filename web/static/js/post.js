@@ -1,5 +1,8 @@
 let currentUser = null;
 let currentPostId = null;
+let currentPost = null;
+let allCategories = [];
+let editingCommentId = null;
 
 function getPostIdFromUrl() {
   const match = location.pathname.match(/^\/posts\/(\d+)$/);
@@ -54,6 +57,97 @@ function renderReactionButtons(type, id, reactions) {
     </div>`;
 }
 
+function showPostView() {
+  document.getElementById('post-view')?.removeAttribute('hidden');
+  document.getElementById('post-edit')?.setAttribute('hidden', '');
+}
+
+function showPostEdit() {
+  document.getElementById('post-view')?.setAttribute('hidden', '');
+  document.getElementById('post-edit')?.removeAttribute('hidden');
+}
+
+function showEditPostError(message) {
+  const el = document.getElementById('edit-post-error');
+  if (!el) return;
+  if (message) {
+    el.textContent = message;
+    el.removeAttribute('hidden');
+  } else {
+    el.setAttribute('hidden', '');
+  }
+}
+
+function renderEditCategoryCheckboxes(selectedIds = []) {
+  const container = document.getElementById('edit-post-categories');
+  if (!container) return;
+
+  const selected = new Set(selectedIds.map(Number));
+  container.innerHTML = allCategories
+    .map(
+      (c) => `
+      <label class="forum-checkbox">
+        <input type="checkbox" name="category" value="${c.id}"${selected.has(c.id) ? ' checked' : ''}>
+        ${escapeHtml(c.name)}
+      </label>`,
+    )
+    .join('');
+}
+
+async function loadAllCategories() {
+  const res = await fetch('/api/categories');
+  if (!res.ok) throw new Error('categories');
+  const data = await res.json();
+  allCategories = data.categories;
+}
+
+function openPostEdit() {
+  if (!currentPost) return;
+
+  const form = document.getElementById('edit-post-form');
+  if (!form) return;
+
+  form.title.value = currentPost.title;
+  form.content.value = currentPost.content;
+  form.newCategories.value = '';
+  renderEditCategoryCheckboxes(currentPost.categoryIds ?? []);
+  showEditPostError('');
+  showPostEdit();
+}
+
+function renderCommentItem(c) {
+  if (editingCommentId === c.id) {
+    return `
+      <li class="card comment">
+        <p class="comment__meta">par ${escapeHtml(c.author)} — ${formatDate(c.createdAt)}</p>
+        <form class="comment__edit-form" data-save-comment="${c.id}">
+          <textarea name="content" required>${escapeHtml(c.content)}</textarea>
+          <div class="comment__edit-actions">
+            <button type="submit" class="btn btn--sm">Enregistrer</button>
+            <button type="button" class="btn btn--ghost btn--sm" data-cancel-comment="${c.id}">Annuler</button>
+          </div>
+        </form>
+      </li>`;
+  }
+
+  const ownerActions = currentUser?.id === c.userId
+    ? `<div class="comment__actions">
+        <button type="button" class="btn btn--ghost btn--sm" data-edit-comment="${c.id}">Modifier</button>
+        <button type="button" class="btn btn--ghost btn--sm forum-post__delete" data-delete-comment="${c.id}">Supprimer</button>
+      </div>`
+    : '';
+
+  return `
+    <li class="card comment">
+      <div class="comment__header">
+        <p class="comment__meta">par ${escapeHtml(c.author)} — ${formatDate(c.createdAt)}</p>
+        ${ownerActions}
+      </div>
+      <p class="comment__content">${escapeHtml(c.content)}</p>
+      ${renderReactionButtons('comment', c.id, c.reactions)}
+    </li>`;
+}
+
 function updateReactionAuthHint() {
   const hint = document.getElementById('reaction-login-hint');
   if (hint) hint.hidden = !!currentUser;
@@ -104,32 +198,18 @@ function renderComments(comments) {
   }
 
   empty?.setAttribute('hidden', '');
-  list.innerHTML = comments
-    .map(
-      (c) => `
-      <li class="card comment">
-        <div class="comment__header">
-          <p class="comment__meta">par ${escapeHtml(c.author)} — ${formatDate(c.createdAt)}</p>
-          ${
-            currentUser?.id === c.userId
-              ? `<button type="button" class="btn btn--ghost btn--sm forum-post__delete" data-delete-comment="${c.id}">Supprimer</button>`
-              : ''
-          }
-        </div>
-        <p class="comment__content">${escapeHtml(c.content)}</p>
-        ${renderReactionButtons('comment', c.id, c.reactions)}
-      </li>`,
-    )
-    .join('');
+  list.innerHTML = comments.map((c) => renderCommentItem(c)).join('');
 }
 
 function renderPost(post) {
   const loading = document.getElementById('post-loading');
   const error = document.getElementById('post-error');
   const detail = document.getElementById('post-detail');
-  const deleteBtn = document.getElementById('post-delete');
+  const ownerActions = document.getElementById('post-owner-actions');
 
+  currentPost = post;
   currentPostId = post.id;
+  editingCommentId = null;
 
   if (loading) loading.setAttribute('hidden', '');
   if (error) error.setAttribute('hidden', '');
@@ -142,16 +222,16 @@ function renderPost(post) {
 
   renderBadges(post.categories);
 
-  if (deleteBtn) {
+  if (ownerActions) {
     if (currentUser?.id === post.userId) {
-      deleteBtn.removeAttribute('hidden');
-      deleteBtn.onclick = () => handleDeletePost(post.id);
+      ownerActions.removeAttribute('hidden');
     } else {
-      deleteBtn.setAttribute('hidden', '');
+      ownerActions.setAttribute('hidden', '');
     }
   }
 
   if (detail) detail.removeAttribute('hidden');
+  showPostView();
   updatePostReactions(post.reactions ?? { likes: 0, dislikes: 0, userReaction: null });
   updateReactionAuthHint();
   updateCommentForm();
@@ -318,6 +398,70 @@ async function handleReaction(type, id, value) {
   }
 }
 
+async function handleUpdatePost(e) {
+  e.preventDefault();
+  showEditPostError('');
+
+  const form = e.target;
+  const categoryIds = [...form.querySelectorAll('input[name="category"]:checked')].map(
+    (input) => Number(input.value),
+  );
+  const categoryNames = (form.newCategories?.value ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  try {
+    const res = await fetch(`/api/posts/${currentPostId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: form.title.value,
+        content: form.content.value,
+        categoryIds,
+        categoryNames,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      showEditPostError(data.error || 'Erreur lors de la modification');
+      return;
+    }
+
+    await loadPost();
+  } catch {
+    showEditPostError('Impossible de contacter le serveur.');
+  }
+}
+
+async function handleUpdateComment(e, commentId) {
+  e.preventDefault();
+  const content = e.target.content.value.trim();
+  if (!content) return;
+
+  try {
+    const res = await fetch(`/api/comments/${commentId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Impossible de modifier le commentaire.');
+      return;
+    }
+
+    editingCommentId = null;
+    await loadComments();
+  } catch {
+    alert('Impossible de contacter le serveur.');
+  }
+}
+
 async function handleDeletePost(postId) {
   if (!confirm('Supprimer cette publication ?')) return;
 
@@ -352,9 +496,23 @@ async function handleDeleteComment(commentId) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await updateNavbar();
+  try {
+    await loadAllCategories();
+  } catch {
+    /* catégories optionnelles pour l'édition */
+  }
   await loadPost();
 
   document.getElementById('comment-form')?.addEventListener('submit', handleCreateComment);
+  document.getElementById('edit-post-form')?.addEventListener('submit', handleUpdatePost);
+  document.getElementById('post-edit-btn')?.addEventListener('click', openPostEdit);
+  document.getElementById('post-delete')?.addEventListener('click', () => {
+    if (currentPostId) handleDeletePost(currentPostId);
+  });
+  document.getElementById('edit-post-cancel')?.addEventListener('click', () => {
+    showEditPostError('');
+    showPostView();
+  });
 
   document.addEventListener('click', (e) => {
     const reactBtn = e.target.closest('[data-react]');
@@ -368,9 +526,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    const editCommentBtn = e.target.closest('[data-edit-comment]');
+    if (editCommentBtn) {
+      editingCommentId = Number(editCommentBtn.dataset.editComment);
+      loadComments();
+      return;
+    }
+
+    const cancelCommentBtn = e.target.closest('[data-cancel-comment]');
+    if (cancelCommentBtn) {
+      editingCommentId = null;
+      loadComments();
+      return;
+    }
+
     const deleteCommentBtn = e.target.closest('[data-delete-comment]');
     if (deleteCommentBtn) {
       handleDeleteComment(Number(deleteCommentBtn.dataset.deleteComment));
+    }
+  });
+
+  document.addEventListener('submit', (e) => {
+    const form = e.target.closest('[data-save-comment]');
+    if (form) {
+      handleUpdateComment(e, Number(form.dataset.saveComment));
     }
   });
 });

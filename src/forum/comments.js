@@ -45,3 +45,22 @@ export function deleteComment(commentId, userId) {
   }
   getDb().prepare('DELETE FROM comments WHERE id = ?').run(commentId);
 }
+
+export function updateComment(commentId, userId, content) {
+  content = content?.trim() ?? '';
+  if (!content) {
+    throw Object.assign(new Error('Contenu requis'), { code: 'INVALID' });
+  }
+
+  const comment = getCommentById(commentId);
+  if (!comment) {
+    throw Object.assign(new Error('Commentaire introuvable'), { code: 'NOT_FOUND' });
+  }
+  if (comment.user_id !== userId) {
+    throw Object.assign(new Error('Non autorisé'), { code: 'FORBIDDEN' });
+  }
+
+  getDb()
+    .prepare('UPDATE comments SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .run(content, commentId);
+}

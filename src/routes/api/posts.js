@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createComment, listComments } from '../../forum/comments.js';
-import { createPost, deletePost, getPostById, getPostDetail, listPosts } from '../../forum/posts.js';
+import { createPost, deletePost, getPostById, getPostCategoryIds, getPostDetail, listPosts, updatePost } from '../../forum/posts.js';
 import { getCommentReactionSummaries, getPostReactionSummary, setPostReaction } from '../../forum/reactions.js';
 import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 
@@ -126,12 +126,33 @@ router.get('/:id', optionalAuth, (req, res) => {
         userId: p.user_id,
         createdAt: p.created_at,
         categories: p.categories ? p.categories.split(', ') : [],
+        categoryIds: getPostCategoryIds(postId),
         reactions: getPostReactionSummary(postId, req.user?.id),
       },
     });
   } catch (err) {
     console.error('erreur get post:', err);
     res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+router.put('/:id', requireAuth, (req, res) => {
+  const postId = Number(req.params.id);
+  const { title, content, categoryIds, categoryNames } = req.body ?? {};
+
+  try {
+    updatePost(postId, req.user.id, title, content, categoryIds, categoryNames);
+    res.json({ message: 'Publication modifiée' });
+  } catch (err) {
+    const status = err.code === 'NOT_FOUND' ? 404 : err.code === 'FORBIDDEN' ? 403 : 400;
+    const messages = {
+      INVALID: 'Titre et contenu requis.',
+      NO_CATEGORY: 'Sélectionnez ou proposez au moins une catégorie.',
+      INVALID_CATEGORY: 'Catégorie invalide.',
+      NOT_FOUND: 'Publication introuvable.',
+      FORBIDDEN: 'Vous ne pouvez modifier que vos propres publications.',
+    };
+    res.status(status).json({ error: messages[err.code] ?? 'Erreur lors de la modification' });
   }
 });
 
