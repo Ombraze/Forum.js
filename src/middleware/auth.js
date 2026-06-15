@@ -1,34 +1,25 @@
-import { verifyToken } from '../auth/jwt.js';
+import { getSession } from '../auth/session.js';
 import { getUserById } from '../auth/users.js';
 
+const COOKIE_NAME = 'sid';
+
 export function requireAuth(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
+  const session = getSession(req.cookies?.[COOKIE_NAME]);
+  if (!session) {
     return res.status(401).json({ error: 'Authentification requise' });
   }
 
-  try {
-    const payload = verifyToken(header.slice(7));
-    const user = getUserById(payload.sub);
-    if (!user) {
-      return res.status(401).json({ error: 'Utilisateur introuvable' });
-    }
-    req.user = user;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token invalide ou expiré' });
+  const user = getUserById(session.userId);
+  if (!user) {
+    return res.status(401).json({ error: 'Utilisateur introuvable' });
   }
+
+  req.user = user;
+  next();
 }
 
 export function optionalAuth(req, res, next) {
-  const header = req.headers.authorization;
-  if (header?.startsWith('Bearer ')) {
-    try {
-      const payload = verifyToken(header.slice(7));
-      req.user = getUserById(payload.sub) ?? undefined;
-    } catch {
-      req.user = undefined;
-    }
-  }
+  const session = getSession(req.cookies?.[COOKIE_NAME]);
+  req.user = session ? (getUserById(session.userId) ?? undefined) : undefined;
   next();
 }
