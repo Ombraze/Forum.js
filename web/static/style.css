@@ -578,6 +578,30 @@ body.home main {
   gap: 0.5rem;
 }
 
+.error-page {
+  padding: 2rem 1rem;
+}
+
+.error-page__card {
+  max-width: 32rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.error-page__code {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.error-page__card h1 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
 /* Icônes */
 .icon {
   width: 1.2rem;

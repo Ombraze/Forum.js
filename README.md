@@ -108,7 +108,7 @@ Forum.js/
 │   ├── auth/               # Utilisateurs + sessions
 │   ├── db/                 # SQLite + schéma
 │   ├── forum/              # Logique posts & catégories
-│   ├── middleware/         # Vérification session
+│   ├── middleware/         # Auth + gestion des erreurs HTTP
 │   └── routes/api/         # Routes REST
 ├── web/
 │   ├── static/

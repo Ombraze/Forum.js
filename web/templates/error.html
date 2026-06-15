@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erreur %%STATUS%% — Forum.js</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="/" class="navbar__brand">
+            <span class="navbar__logo">
+                <svg class="icon icon--logo" aria-hidden="true"><use href="/static/icons.svg#icon-forum"></use></svg>
+            </span>
+            Forum Project
+        </a>
+        <div class="navbar__actions">
+            <a href="/" class="btn btn--ghost">Accueil</a>
+            <a href="/app" class="btn btn--primary">Publications</a>
+        </div>
+    </header>
+
+    <main class="container error-page">
+        <section class="card error-page__card">
+            <p class="error-page__code">%%STATUS%%</p>
+            <h1>%%MESSAGE%%</h1>
+            <a href="/" class="btn btn--primary">Retour à l'accueil</a>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Forum.js — Projet Ynov</p>
+    </footer>
+</body>
+</html>
