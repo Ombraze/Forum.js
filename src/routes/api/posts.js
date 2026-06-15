@@ -6,10 +6,21 @@ import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', (req, res) => {
+router.get('/', optionalAuth, (req, res) => {
   try {
     const categoryId = req.query.category ? Number(req.query.category) : null;
-    const posts = listPosts(categoryId || null).map((p) => ({
+    const wantsMine = req.query.mine === '1' || req.query.mine === 'true';
+    const wantsLiked = req.query.liked === '1' || req.query.liked === 'true';
+
+    if ((wantsMine || wantsLiked) && !req.user) {
+      return res.status(401).json({ error: 'Authentification requise' });
+    }
+
+    const posts = listPosts({
+      categoryId: categoryId || null,
+      userId: wantsMine ? req.user.id : null,
+      likedByUserId: wantsLiked ? req.user.id : null,
+    }).map((p) => ({
       id: p.id,
       title: p.title,
       content: p.content,

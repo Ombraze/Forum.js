@@ -1,7 +1,7 @@
 import { getDb } from '../db/database.js';
 import { createCategory, getCategoryById } from './categories.js';
 
-export function listPosts(categoryId = null) {
+export function listPosts({ categoryId = null, userId = null, likedByUserId = null } = {}) {
   let query = `
     SELECT
       p.id,
@@ -17,13 +17,26 @@ export function listPosts(categoryId = null) {
     LEFT JOIN categories c ON c.id = pc.category_id
   `;
 
+  const conditions = [];
   const params = [];
+
   if (categoryId) {
-    query += `
-    WHERE p.id IN (
-      SELECT post_id FROM post_categories WHERE category_id = ?
-    )`;
+    conditions.push('p.id IN (SELECT post_id FROM post_categories WHERE category_id = ?)');
     params.push(categoryId);
+  }
+  if (userId) {
+    conditions.push('p.user_id = ?');
+    params.push(userId);
+  }
+  if (likedByUserId) {
+    conditions.push(
+      'p.id IN (SELECT post_id FROM post_reactions WHERE user_id = ? AND value = 1)',
+    );
+    params.push(likedByUserId);
+  }
+
+  if (conditions.length) {
+    query += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   query += `

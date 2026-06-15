@@ -1,5 +1,6 @@
 let categories = [];
 let activeCategory = null;
+let activeUserFilter = null;
 let currentUser = null;
 
 function formatDate(iso) {
@@ -28,6 +29,22 @@ function renderCategoryBadges(names) {
     .join('')}</div>`;
 }
 
+function getEmptyMessage() {
+  if (activeUserFilter === 'mine') {
+    return activeCategory
+      ? 'Vous n\'avez aucune publication dans cette catégorie.'
+      : 'Vous n\'avez pas encore publié.';
+  }
+  if (activeUserFilter === 'liked') {
+    return activeCategory
+      ? 'Vous n\'avez liké aucune publication dans cette catégorie.'
+      : 'Vous n\'avez liké aucune publication.';
+  }
+  return activeCategory
+    ? 'Aucune publication dans cette catégorie.'
+    : 'Aucune publication pour le moment.';
+}
+
 function renderPosts(posts) {
   const container = document.getElementById('posts-list');
   const empty = document.getElementById('posts-empty');
@@ -36,9 +53,7 @@ function renderPosts(posts) {
   container.innerHTML = '';
 
   if (!posts.length) {
-    empty.textContent = activeCategory
-      ? 'Aucune publication dans cette catégorie.'
-      : 'Aucune publication pour le moment.';
+    empty.textContent = getEmptyMessage();
     empty.removeAttribute('hidden');
     return;
   }
@@ -65,6 +80,55 @@ function renderPosts(posts) {
       </li>`,
     )
     .join('');
+}
+
+function renderUserFilters() {
+  const container = document.getElementById('user-filters');
+  if (!container) return;
+
+  if (!currentUser) {
+    activeUserFilter = null;
+    container.setAttribute('hidden', '');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.removeAttribute('hidden');
+  const buttons = [
+    {
+      value: '',
+      label: 'Toutes les publications',
+      active: activeUserFilter === null,
+    },
+    {
+      value: 'mine',
+      label: 'Mes publications',
+      active: activeUserFilter === 'mine',
+    },
+    {
+      value: 'liked',
+      label: 'Posts likés',
+      active: activeUserFilter === 'liked',
+    },
+  ];
+
+  container.innerHTML = buttons
+    .map(
+      ({ value, label, active }) => `
+      <button type="button" class="forum-filter${active ? ' forum-filter--active' : ''}" data-user-filter="${value}">
+        ${escapeHtml(label)}
+      </button>`,
+    )
+    .join('');
+
+  container.querySelectorAll('[data-user-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.userFilter;
+      activeUserFilter = value || null;
+      renderUserFilters();
+      loadPosts();
+    });
+  });
 }
 
 function renderFilters() {
@@ -132,6 +196,7 @@ async function updateNavbar() {
       currentUser = null;
       showCreateForm(false);
       showNavbarLoggedOut();
+      renderUserFilters();
       return;
     }
 
@@ -146,10 +211,12 @@ async function updateNavbar() {
       location.href = '/';
     });
     showCreateForm(true);
+    renderUserFilters();
   } catch {
     currentUser = null;
     showCreateForm(false);
     showNavbarLoggedOut();
+    renderUserFilters();
   }
 }
 
@@ -165,10 +232,14 @@ async function loadCategories() {
 async function loadPosts() {
   const empty = document.getElementById('posts-empty');
   try {
-    const url = activeCategory
-      ? `/api/posts?category=${activeCategory}`
-      : '/api/posts';
-    const res = await fetch(url);
+    const params = new URLSearchParams();
+    if (activeCategory) params.set('category', String(activeCategory));
+    if (activeUserFilter === 'mine') params.set('mine', '1');
+    if (activeUserFilter === 'liked') params.set('liked', '1');
+
+    const query = params.toString();
+    const url = query ? `/api/posts?${query}` : '/api/posts';
+    const res = await fetch(url, { credentials: 'include' });
     if (!res.ok) throw new Error('fetch failed');
     const { posts } = await res.json();
     renderPosts(posts);
