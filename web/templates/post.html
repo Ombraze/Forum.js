@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication — Forum.js</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="/" class="navbar__brand">
+            <span class="navbar__logo">
+                <svg class="icon icon--logo" aria-hidden="true"><use href="/static/icons.svg#icon-forum"></use></svg>
+            </span>
+            Forum Project
+        </a>
+        <div class="navbar__actions" id="navbar-actions">
+            <a href="/login" class="btn btn--primary">Connexion</a>
+            <a href="/register" class="btn btn--ghost">S'inscrire</a>
+        </div>
+    </header>
+
+    <main class="forum-page">
+        <a href="/app" class="post-back">← Retour aux publications</a>
+
+        <p id="post-loading" class="text-muted">Chargement…</p>
+        <p id="post-error" class="auth-message auth-message--error" hidden></p>
+
+        <article id="post-detail" class="card post-detail" hidden>
+            <div class="post-detail__header">
+                <div id="post-badges" class="forum-badges"></div>
+                <button type="button" id="post-delete" class="btn btn--ghost btn--sm forum-post__delete" hidden>
+                    Supprimer
+                </button>
+            </div>
+            <h1 id="post-title"></h1>
+            <p id="post-meta" class="forum-post__meta"></p>
+            <div id="post-content" class="post-detail__content"></div>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Forum.js — Projet Ynov</p>
+    </footer>
+    <script type="module" src="/static/js/post.js"></script>
+</body>
+</html>

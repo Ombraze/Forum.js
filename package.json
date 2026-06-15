@@ -1,10 +1,7 @@
 {
-
-  
-
   "name": "forum.js",
   "version": "1.0.0",
-  "description": "Forum web — Node.js, SQLite, JWT",
+  "description": "Forum web — Node.js, SQLite, sessions cookie",
   "type": "module",
   "main": "src/server/server.js",
   "scripts": {
@@ -19,9 +16,6 @@
     "better-sqlite3": "^12.10.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "express": "^5.2.1"
   }
 }
-
-

@@ -443,6 +443,41 @@ body.home main {
   color: var(--text-muted);
 }
 
+.post-back {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.post-back:hover {
+  color: var(--accent);
+}
+
+.post-detail {
+  margin-top: 0.5rem;
+}
+
+.post-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-detail h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.post-detail__content {
+  margin-top: 1.25rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
 /* Icônes */
 .icon {
   width: 1.2rem;

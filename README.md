@@ -1,29 +1,32 @@
 # Forum.js
 
-Forum web développé en **Node.js** dans le cadre du projet Ynov. Application avec pages HTML, styles CSS et API REST sécurisée par **JWT**.
+Forum web développé en **Node.js** dans le cadre du projet Ynov. Application avec pages HTML, styles CSS et API REST sécurisée par **sessions cookie**.
 
 ## Fonctionnalités
 
 ### En place
 - Page d'accueil (présentation, navigation)
-- Inscription et connexion (JWT stocké côté client)
-- Liste des publications sur `/app`
+- Inscription, connexion et déconnexion (cookie `httpOnly`)
+- Liste des publications sur `/app` avec filtres par catégorie
+- **Détail d'une publication** sur `/posts/:id`
+- Création de publications (catégories existantes ou nouvelles proposées)
+- Suppression de ses propres publications
 - Serveur HTTP avec fichiers statiques (CSS, JS, icônes SVG)
 - Base SQLite avec schéma automatique
 
 ### Prévu / en cours
-- CRUD posts et commentaires
-- Catégories, likes / dislikes
-- Détail d'un post
+- Commentaires
+- Likes / dislikes
+- Édition de posts
 
 ## Stack technique
 
-| Couche          | Technologie                          |
-|-----------------|--------------------------------------|
-| Backend         | Node.js 18+, Express                 |
-| Authentification| JWT (`jsonwebtoken`) + bcrypt        |
-| Base de données | SQLite (`better-sqlite3`)            |
-| Frontend        | HTML, CSS, JavaScript (modules ES)   |
+| Couche           | Technologie                        |
+|------------------|------------------------------------|
+| Backend          | Node.js 18+, Express 5             |
+| Authentification | Sessions cookie + bcrypt           |
+| Base de données  | SQLite (`better-sqlite3`)          |
+| Frontend         | HTML, CSS, JavaScript (modules ES) |
 
 ## Prérequis
 
@@ -38,7 +41,6 @@ cd Forum.js
 
 npm install
 
-# Copier et personnaliser le secret JWT
 cp .env.example .env
 
 npm start
@@ -54,6 +56,14 @@ La base est créée automatiquement dans `data/forum.db` au premier démarrage.
 npm run dev
 ```
 
+### Note Windows / WSL
+
+`better-sqlite3` est un module natif. Utilise **toujours le même terminal** (PowerShell **ou** bash/WSL) pour `npm install` et `npm run dev`. Si tu changes d'environnement :
+
+```bash
+npm rebuild better-sqlite3
+```
+
 ## Routes
 
 ### Pages HTML
@@ -64,27 +74,34 @@ npm run dev
 | `/login`    | Connexion      |
 | `/register` | Inscription    |
 | `/app`      | Publications   |
+| `/posts/:id`| Détail d'un post |
 | `/static/*` | CSS, JS, SVG   |
 
 ### API REST
 
-| Route                  | Méthode | Description              |
-|------------------------|---------|--------------------------|
-| `/api/auth/register`   | POST    | Créer un compte          |
-| `/api/auth/login`      | POST    | Connexion → JWT          |
-| `/api/auth/me`         | GET     | Profil (Bearer token)    |
-| `/api/posts`           | GET     | Liste des publications   |
+| Route                  | Méthode | Auth   | Description                    |
+|------------------------|---------|--------|--------------------------------|
+| `/api/auth/register`   | POST    | Non    | Créer un compte                |
+| `/api/auth/login`      | POST    | Non    | Connexion → cookie de session  |
+| `/api/auth/logout`     | POST    | Cookie | Déconnexion                    |
+| `/api/auth/me`         | GET     | Cookie | Profil de l'utilisateur        |
+| `/api/categories`      | GET     | Non    | Liste des catégories           |
+| `/api/posts`           | GET     | Non    | Liste des publications         |
+| `/api/posts/:id`       | GET     | Non    | Détail d'une publication       |
+| `/api/posts`           | POST    | Cookie | Créer une publication          |
+| `/api/posts/:id`       | DELETE  | Cookie | Supprimer sa publication       |
 
 ## Structure du projet
 
 ```
 Forum.js/
-├── server.js               # Point d'entrée
 ├── src/
-│   ├── auth/               # Utilisateurs + JWT
+│   ├── server/
+│   │   └── server.js       # Point d'entrée
+│   ├── auth/               # Utilisateurs + sessions
 │   ├── db/                 # SQLite + schéma
-│   ├── forum/              # Logique posts
-│   ├── middleware/         # Vérification JWT
+│   ├── forum/              # Logique posts & catégories
+│   ├── middleware/         # Vérification session
 │   └── routes/api/         # Routes REST
 ├── web/
 │   ├── static/
@@ -98,10 +115,10 @@ Forum.js/
 
 ## Variables d'environnement
 
-| Variable     | Description                    |
-|--------------|--------------------------------|
-| `JWT_SECRET` | Clé secrète pour signer les JWT |
-| `PORT`       | Port du serveur (défaut : 8080) |
+| Variable   | Description                              |
+|------------|------------------------------------------|
+| `PORT`     | Port du serveur (défaut : 8080)          |
+| `NODE_ENV` | `production` active le cookie `secure`   |
 
 ## Équipe
 

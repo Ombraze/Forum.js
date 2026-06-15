@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPost, deletePost, listPosts } from '../../forum/posts.js';
+import { createPost, deletePost, getPostDetail, listPosts } from '../../forum/posts.js';
 import { requireAuth } from '../../middleware/auth.js';
 
 const router = Router();
@@ -36,6 +36,35 @@ router.post('/', requireAuth, (req, res) => {
       INVALID_CATEGORY: 'Catégorie invalide.',
     };
     res.status(400).json({ error: messages[err.code] ?? 'Erreur lors de la création' });
+  }
+});
+
+router.get('/:id', (req, res) => {
+  const postId = Number(req.params.id);
+  if (!postId) {
+    return res.status(400).json({ error: 'Identifiant invalide.' });
+  }
+
+  try {
+    const p = getPostDetail(postId);
+    if (!p) {
+      return res.status(404).json({ error: 'Publication introuvable.' });
+    }
+
+    res.json({
+      post: {
+        id: p.id,
+        title: p.title,
+        content: p.content,
+        author: p.author,
+        userId: p.user_id,
+        createdAt: p.created_at,
+        categories: p.categories ? p.categories.split(', ') : [],
+      },
+    });
+  } catch (err) {
+    console.error('erreur get post:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

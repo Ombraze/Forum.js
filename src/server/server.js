@@ -32,6 +32,7 @@ app.get('/login.html', servePage('login.html'));
 app.get('/register', servePage('register.html'));
 app.get('/register.html', servePage('register.html'));
 app.get('/app', servePage('app.html'));
+app.get('/posts/:id', servePage('post.html'));
 
 app.use('/api/auth', authRouter);
 app.use('/api/categories', categoriesRouter);

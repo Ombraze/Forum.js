@@ -91,6 +91,27 @@ export function getPostById(id) {
     .get(id);
 }
 
+export function getPostDetail(id) {
+  return getDb()
+    .prepare(`
+      SELECT
+        p.id,
+        p.title,
+        p.content,
+        p.created_at,
+        p.user_id,
+        u.username AS author,
+        GROUP_CONCAT(c.name, ', ') AS categories
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      LEFT JOIN post_categories pc ON pc.post_id = p.id
+      LEFT JOIN categories c ON c.id = pc.category_id
+      WHERE p.id = ?
+      GROUP BY p.id
+    `)
+    .get(id);
+}
+
 export function deletePost(postId, userId) {
   const post = getPostById(postId);
   if (!post) {
